@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
@@ -9,9 +7,9 @@ public class GridManager : MonoBehaviour
     [SerializeField]
     private int cols = 10;
     [SerializeField]
-    private float tileSize = 1;
+    private float tileSize = 90;
 
-    private GameObject[,] grid;
+    private Node[,] grid;
 
     // Start is called before the first frame update
     void Start()
@@ -21,7 +19,9 @@ public class GridManager : MonoBehaviour
 
     private void GenerateGrid()
     {
-        grid = new GameObject[rows, cols];
+        tileSize /= 90;
+
+        grid = new Node[rows, cols];
 
         GameObject referenceTile1 = (GameObject)Instantiate(Resources.Load("tile1"));
         GameObject referenceTile2 = (GameObject)Instantiate(Resources.Load("tile2"));
@@ -30,7 +30,7 @@ public class GridManager : MonoBehaviour
         {
             for (int col = 0; col < cols; col++)
             {
-                GameObject referenceTile = Random.value < 0.5 ? referenceTile1 : referenceTile2;
+                GameObject referenceTile = Random.value < 0.7 ? referenceTile1 : referenceTile2;
                 GameObject tile = (GameObject)Instantiate(referenceTile, transform);
 
                 tile.transform.localScale = new Vector2(tile.transform.localScale.x * tileSize, tile.transform.localScale.y * tileSize);
@@ -40,7 +40,10 @@ public class GridManager : MonoBehaviour
 
                 tile.transform.position = new Vector2(posX, posY);
 
-                grid[row, col] = tile;
+                grid[row, col] = tile.GetComponent<Node>();
+
+                grid[row, col].x = row;
+                grid[row, col].y = col;
             }
         }
 
@@ -52,7 +55,7 @@ public class GridManager : MonoBehaviour
         transform.position = new Vector2(-gridW / 2 + tileSize / 2, gridH / 2 - tileSize / 2);
     }
 
-    public GameObject[,] GetGrid()
+    public Node[,] GetGrid()
     {
         return grid;
     }
