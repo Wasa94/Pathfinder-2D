@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
 
     public int mapWidth = 10;
     public int mapHeight = 10;
-    public float tileSize = 90;
 
     public int startX = 0;
     public int startY = 4;
@@ -30,13 +29,14 @@ public class GameManager : MonoBehaviour
     {
         if (mapWidth < 1) return "Map width must be positive integer!";
         if (mapHeight < 1) return "Map height must be positive integer!";
-        if (tileSize <= 0) return "Map tile size must be positive float!";
 
         if (startX < 0 || startX >= mapHeight) return "Start position must be valid!";
         if (startY < 0 || startY >= mapWidth) return "Start position must be valid!";
 
         if (endX < 0 || endX >= mapHeight) return "End position must be valid!";
         if (endY < 0 || endY >= mapWidth) return "End position must be valid!";
+
+        if (!dfs && !bfs && !dijkstra && !aStar) return "At least one algorithm must be selected!";
 
         return string.Empty;
     }

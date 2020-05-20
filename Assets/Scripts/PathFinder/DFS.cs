@@ -2,20 +2,24 @@
 
 public class DFS : IPathFinder
 {
-    public IEnumerable<Node> FindPath(Node[,] map, Node start, Node target)
+    public IEnumerable<Node> FindPath(Node[,] map, Node start, Node target, out int countOfCheckedNodes, out string algName)
     {
+        countOfCheckedNodes = 0;
+        algName = "DFS";
+
         try
         {
             if (map == null || start == null || target == null)
                 return null;
 
-            int mapSize = map.GetLength(0);
+            int mapHeight = map.GetLength(0);
+            int mapWidth = map.GetLength(1);
 
-            bool[,] visited = new bool[mapSize, mapSize];
+            bool[,] visited = new bool[mapHeight, mapWidth];
 
             Stack<Node> stack = new Stack<Node>();
 
-            Node[,] pathMatrix = new Node[mapSize, mapSize];
+            Node[,] pathMatrix = new Node[mapHeight, mapWidth];
 
             visited[start.x, start.y] = true;
             stack.Push(start);
@@ -23,6 +27,7 @@ public class DFS : IPathFinder
             while (stack.Count > 0)
             {
                 Node tmp = stack.Pop();
+                countOfCheckedNodes++;
 
                 if (tmp == target)
                 {
@@ -55,14 +60,14 @@ public class DFS : IPathFinder
                     pathMatrix[tmp.x, tmp.y - 1] = tmp;
                 }
 
-                if (tmp.x < mapSize - 1 && !visited[tmp.x + 1, tmp.y] && !map[tmp.x + 1, tmp.y].isBlocked)
+                if (tmp.x < mapHeight - 1 && !visited[tmp.x + 1, tmp.y] && !map[tmp.x + 1, tmp.y].isBlocked)
                 {
                     stack.Push(map[tmp.x + 1, tmp.y]);
                     visited[tmp.x + 1, tmp.y] = true;
                     pathMatrix[tmp.x + 1, tmp.y] = tmp;
                 }
 
-                if (tmp.y < mapSize - 1 && !visited[tmp.x, tmp.y + 1] && !map[tmp.x, tmp.y + 1].isBlocked)
+                if (tmp.y < mapWidth - 1 && !visited[tmp.x, tmp.y + 1] && !map[tmp.x, tmp.y + 1].isBlocked)
                 {
                     stack.Push(map[tmp.x, tmp.y + 1]);
                     visited[tmp.x, tmp.y + 1] = true;

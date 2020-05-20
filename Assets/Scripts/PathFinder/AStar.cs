@@ -1,45 +1,42 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 public class AStar : IPathFinder
 {
-    public IEnumerable<Node> FindPath(Node[,] map, Node start, Node target)
+    public IEnumerable<Node> FindPath(Node[,] map, Node start, Node target, out int countOfCheckedNodes, out string algName)
     {
+        countOfCheckedNodes = 0;
+        algName = "A*";
+
         try
         {
             if (map == null || start == null || target == null)
                 return null;
 
-            int mapSize = map.GetLength(0);
+            int mapHeight = map.GetLength(0);
+            int mapWidth = map.GetLength(1);
 
-            bool[,] visited = new bool[mapSize, mapSize];
-            float[,] distance = new float[mapSize, mapSize];
-            float[,] rootDistance = new float[mapSize, mapSize];
-            float[,] targetDistance = new float[mapSize, mapSize];
+            bool[,] visited = new bool[mapHeight, mapWidth];
 
             Vector2 targetVector = new Vector2(target.x, target.y);
-            for (int i = 0; i < mapSize; i++)
-                for (int j = 0; j < mapSize; j++)
+            for (int i = 0; i < mapHeight; i++)
+                for (int j = 0; j < mapWidth; j++)
                 {
-                    distance[i, j] = float.MaxValue;
-                    rootDistance[i, j] = float.MaxValue;
-                    targetDistance[i, j] = 2 * Vector2.Distance(new Vector2(map[i, j].x, map[i, j].y), targetVector);
+                    map[i, j].gCost = float.MaxValue;
+                    map[i, j].hCost = Vector2.Distance(new Vector2(map[i, j].x, map[i, j].y), targetVector);
                 }
 
-            HashSet<Node> set = new HashSet<Node>();
-            Node[,] pathMatrix = new Node[mapSize, mapSize];
+            Heap<Node> heap = new Heap<Node>(mapHeight * mapWidth);
+            Node[,] pathMatrix = new Node[mapHeight, mapWidth];
 
-            rootDistance[start.x, start.y] = 0;
-            distance[start.x, start.y] = targetDistance[start.x, start.y];
-            set.Add(start);
+            map[start.x, start.y].gCost = 0;
+            heap.Add(start);
 
-            while (set.Count > 0)
+            while (heap.Count > 0)
             {
-                float min = set.Min(n => distance[n.x, n.y]);
-                Node tmp = set.First(n => distance[n.x, n.y] == min);
-                set.Remove(tmp);
+                Node tmp = heap.RemoveFirst();
                 visited[tmp.x, tmp.y] = true;
+                countOfCheckedNodes++;
 
                 if (tmp == target)
                 {
@@ -60,49 +57,53 @@ public class AStar : IPathFinder
 
                 if (tmp.x > 0 && !visited[tmp.x - 1, tmp.y] && !map[tmp.x - 1, tmp.y].isBlocked)
                 {
-                    rootDistance[tmp.x - 1, tmp.y] = System.Math.Min(rootDistance[tmp.x, tmp.y] + 1, rootDistance[tmp.x - 1, tmp.y]);
-                    float minDistance = System.Math.Min(distance[tmp.x - 1, tmp.y], rootDistance[tmp.x - 1, tmp.y] + targetDistance[tmp.x - 1, tmp.y]);
-                    if (minDistance != distance[tmp.x - 1, tmp.y])
+                    if ((map[tmp.x, tmp.y].gCost + 1) < map[tmp.x - 1, tmp.y].gCost || !heap.Contains(map[tmp.x - 1, tmp.y]))
                     {
-                        set.Add(map[tmp.x - 1, tmp.y]);
                         pathMatrix[tmp.x - 1, tmp.y] = tmp;
-                        distance[tmp.x - 1, tmp.y] = minDistance;
+                        map[tmp.x - 1, tmp.y].gCost = map[tmp.x, tmp.y].gCost + 1;
+                        if (!heap.Contains(map[tmp.x - 1, tmp.y]))
+                            heap.Add(map[tmp.x - 1, tmp.y]);
+                        else
+                            heap.UpdateItem(map[tmp.x - 1, tmp.y]);
                     }
                 }
 
                 if (tmp.y > 0 && !visited[tmp.x, tmp.y - 1] && !map[tmp.x, tmp.y - 1].isBlocked)
                 {
-                    rootDistance[tmp.x, tmp.y - 1] = System.Math.Min(rootDistance[tmp.x, tmp.y] + 1, rootDistance[tmp.x, tmp.y - 1]);
-                    float minDistance = System.Math.Min(distance[tmp.x, tmp.y - 1], rootDistance[tmp.x, tmp.y - 1] + targetDistance[tmp.x, tmp.y - 1]);
-                    if (minDistance != distance[tmp.x, tmp.y - 1])
+                    if ((map[tmp.x, tmp.y].gCost + 1) < map[tmp.x, tmp.y - 1].gCost || !heap.Contains(map[tmp.x, tmp.y - 1]))
                     {
-                        set.Add(map[tmp.x, tmp.y - 1]);
                         pathMatrix[tmp.x, tmp.y - 1] = tmp;
-                        distance[tmp.x, tmp.y - 1] = minDistance;
+                        map[tmp.x, tmp.y - 1].gCost = map[tmp.x, tmp.y].gCost + 1;
+                        if (!heap.Contains(map[tmp.x, tmp.y - 1]))
+                            heap.Add(map[tmp.x, tmp.y - 1]);
+                        else
+                            heap.UpdateItem(map[tmp.x, tmp.y - 1]);
                     }
                 }
 
-                if (tmp.x < mapSize - 1 && !visited[tmp.x + 1, tmp.y] && !map[tmp.x + 1, tmp.y].isBlocked)
+                if (tmp.x < mapHeight - 1 && !visited[tmp.x + 1, tmp.y] && !map[tmp.x + 1, tmp.y].isBlocked)
                 {
-                    rootDistance[tmp.x + 1, tmp.y] = System.Math.Min(rootDistance[tmp.x, tmp.y] + 1, rootDistance[tmp.x + 1, tmp.y]);
-                    float minDistance = System.Math.Min(distance[tmp.x + 1, tmp.y], rootDistance[tmp.x + 1, tmp.y] + targetDistance[tmp.x + 1, tmp.y]);
-                    if (minDistance != distance[tmp.x + 1, tmp.y])
+                    if ((map[tmp.x, tmp.y].gCost + 1) < map[tmp.x + 1, tmp.y].gCost || !heap.Contains(map[tmp.x + 1, tmp.y]))
                     {
-                        set.Add(map[tmp.x + 1, tmp.y]);
                         pathMatrix[tmp.x + 1, tmp.y] = tmp;
-                        distance[tmp.x + 1, tmp.y] = minDistance;
+                        map[tmp.x + 1, tmp.y].gCost = map[tmp.x, tmp.y].gCost + 1;
+                        if (!heap.Contains(map[tmp.x + 1, tmp.y]))
+                            heap.Add(map[tmp.x + 1, tmp.y]);
+                        else
+                            heap.UpdateItem(map[tmp.x + 1, tmp.y]);
                     }
                 }
 
-                if (tmp.y < mapSize - 1 && !visited[tmp.x, tmp.y + 1] && !map[tmp.x, tmp.y + 1].isBlocked)
+                if (tmp.y < mapWidth - 1 && !visited[tmp.x, tmp.y + 1] && !map[tmp.x, tmp.y + 1].isBlocked)
                 {
-                    rootDistance[tmp.x, tmp.y + 1] = System.Math.Min(rootDistance[tmp.x, tmp.y] + 1, rootDistance[tmp.x, tmp.y + 1]);
-                    float minDistance = System.Math.Min(distance[tmp.x, tmp.y + 1], rootDistance[tmp.x, tmp.y + 1] + targetDistance[tmp.x, tmp.y + 1]);
-                    if (minDistance != distance[tmp.x, tmp.y + 1])
+                    if ((map[tmp.x, tmp.y].gCost + 1) < map[tmp.x, tmp.y + 1].gCost || !heap.Contains(map[tmp.x, tmp.y + 1]))
                     {
-                        set.Add(map[tmp.x, tmp.y + 1]);
                         pathMatrix[tmp.x, tmp.y + 1] = tmp;
-                        distance[tmp.x, tmp.y + 1] = minDistance;
+                        map[tmp.x, tmp.y + 1].gCost = map[tmp.x, tmp.y].gCost + 1;
+                        if (!heap.Contains(map[tmp.x, tmp.y + 1]))
+                            heap.Add(map[tmp.x, tmp.y + 1]);
+                        else
+                            heap.UpdateItem(map[tmp.x, tmp.y + 1]);
                     }
                 }
             }

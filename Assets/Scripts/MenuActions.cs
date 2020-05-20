@@ -15,8 +15,6 @@ public class MenuActions : MonoBehaviour
     private InputField inputFieldHeight = null;
     [SerializeField]
     private InputField inputFieldWidth = null;
-    [SerializeField]
-    private InputField inputFieldTileSize = null;
 
     [Header("Start")]
     [SerializeField]
@@ -50,7 +48,6 @@ public class MenuActions : MonoBehaviour
     {
         inputFieldWidth.text = gameManager.mapWidth.ToString();
         inputFieldHeight.text = gameManager.mapHeight.ToString();
-        inputFieldTileSize.text = gameManager.tileSize.ToString();
 
         inputFieldStartX.text = gameManager.startX.ToString();
         inputFieldStartY.text = gameManager.startY.ToString();
@@ -84,12 +81,6 @@ public class MenuActions : MonoBehaviour
         if (!res)
         {
             textError.text = "Map height is not valid!";
-            return;
-        }
-        res = float.TryParse(inputFieldTileSize.text, out gameManager.tileSize);
-        if (!res)
-        {
-            textError.text = "Tile size is not valid!";
             return;
         }
 
