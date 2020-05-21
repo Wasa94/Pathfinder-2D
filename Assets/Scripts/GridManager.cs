@@ -146,6 +146,9 @@ public class GridManager : MonoBehaviour
 
     public void CalculatePaths()
     {
+        if (availableForBlock.Count == 0)
+            return;
+
         if (gameManager.dfs) dfs = FindPath(new DFS());
         if (gameManager.bfs) bfs = FindPath(new BFS());
         if (gameManager.dijkstra) dijkstra = FindPath(new Dijkstra());
@@ -195,6 +198,7 @@ public class GridManager : MonoBehaviour
         levelGridElement.GetComponentInChildren<Text>().text = "Level " + level.number;
         levelGridElement.GetComponentInChildren<LevelDataMono>().levelData = level;
         levelGridElement.GetComponentInChildren<LevelDataMono>().algorithmGrid = algorithmGrid;
+        levelGridElement.GetComponentInChildren<LevelDataMono>().gridManager = this;
     }
 
     private IEnumerable<T> Flatten<T>(T[,] map)
@@ -222,5 +226,36 @@ public class GridManager : MonoBehaviour
         alg.time = (Time.realtimeSinceStartup - startTime) * 1000;
 
         return alg;
+    }
+
+    public void SetMap(List<Vector2> blocked)
+    {
+        if (availableForBlock.Count > 0)
+            return;
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < cols; col++)
+            {
+                grid[row, col].isBlocked = false;
+                grid[row, col].GetComponent<SpriteRenderer>().color = Color.white;
+            }
+        }
+
+        for (int i = 0; i < blocked.Count; i++)
+        {
+            grid[(int)blocked[i].x, (int)blocked[i].y].isBlocked = true;
+            grid[(int)blocked[i].x, (int)blocked[i].y].GetComponent<SpriteRenderer>().color = Color.black;
+        }
+    }
+
+    public Node GetStart()
+    {
+        return grid[startX, startY];
+    }
+
+    public bool IsFinished()
+    {
+        return availableForBlock.Count == 0;
     }
 }

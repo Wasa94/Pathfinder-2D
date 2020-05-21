@@ -36,6 +36,8 @@ public class GameManager : MonoBehaviour
         if (endX < 0 || endX >= mapHeight) return "End position must be valid!";
         if (endY < 0 || endY >= mapWidth) return "End position must be valid!";
 
+        if (startX == endX && startY == endY) return "Start and end positions must be different!";
+
         if (!dfs && !bfs && !dijkstra && !aStar) return "At least one algorithm must be selected!";
 
         return string.Empty;
